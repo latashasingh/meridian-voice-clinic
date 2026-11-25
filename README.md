@@ -1,8 +1,8 @@
 # Meridian Clinic: Voice AI Appointment Assistant
 
-> Call the clinic, talk to **Asha**, and get an appointment booked or cancelled in under a minute. No forms, no hold music.
+> Call the clinic, talk to **Asha**, and get an appointment booked or cancelled in one short conversation. No forms, no hold music.
 
-Asha is a real-time voice receptionist built with **Pipecat**, **Google Gemini** and **ElevenLabs**. A reception dashboard shows every booking, cancellation and open slot live while the call is still going.
+Asha is a real-time voice receptionist built with **Pipecat**, **Google Gemini** and **ElevenLabs**. A reception dashboard shows every booking, cancellation and open slot while the call is still going.
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
 ![Pipecat](https://img.shields.io/badge/Pipecat-voice%20agents-black)
@@ -62,7 +62,7 @@ The assistant may only offer what these tools return. That is how hallucinated s
 ## Project structure
 
 ```
-pipecat-quickstart/
+meridian-voice-clinic/
   server/
     bot.py        Voice pipeline, system prompt and tool registration
     clinic.py     Doctors, slots, booking and cancellation logic
@@ -79,7 +79,7 @@ pipecat-quickstart/
 - Python 3.12 and [uv](https://docs.astral.sh/uv/)
 - Node.js 18 or newer
 - A Google AI Studio API key (Gemini)
-- An ElevenLabs API key
+- An ElevenLabs API key with Text to Speech and Speech to Text access
 
 ### Setup
 
@@ -137,10 +137,13 @@ On Windows PowerShell, if `npm` is blocked by the execution policy, use `npm.cmd
 | Symptom | Likely cause and fix |
 | --- | --- |
 | Asha is silent, log shows `503 UNAVAILABLE` | The Gemini model is overloaded. Set another model in `GEMINI_MODEL` and restart the bot |
+| Asha is silent, log shows `404 Not Found` for the model | The model is not available for your key. Set another model in `GEMINI_MODEL` and restart the bot |
+| Log shows `missing the permission text_to_speech` or `must be authenticated` | Create a new ElevenLabs key with Text to Speech and Speech to Text enabled, then restart the bot |
 | Log shows `completed with no audio` | The ElevenLabs voice is not allowed on your plan. The free plan cannot use library voices through the API, so use a premade voice |
 | Your words appear but there is no reply | Check the bot terminal for `ERROR` lines (Gemini or ElevenLabs) |
 | `only one usage of each socket address` | An old bot is still running on port 7860. Stop it and start again |
-| Dashboard says "Connection problem" | The bot or API is not running. Start both |
+| The call screen says "Connection problem" | The bot is not running. Start it and call again |
+| The dashboard says it can't reach the API | The API is not running. Start it on port 8000 |
 
 ## Limitations and next steps
 
