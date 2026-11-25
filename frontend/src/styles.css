@@ -1,0 +1,615 @@
+/* Meridian Clinic reception dashboard
+   Look: hospital wayfinding signage. Pale sage wall, deep teal ink,
+   one coloured band per speciality, highlighter yellow for live changes. */
+
+:root {
+  --wall: #e4ece8;
+  --card: #f5f9f7;
+  --ink: #12302f;
+  --ink-soft: #4b6663;
+  --line: #c5d3ce;
+  --signal: #2347c5;
+  --mark: #f6c945;
+  --alert: #c8442f;
+  --phone: #0e2928;
+  --phone-text: #f3f1ea;
+  --ui: "Bricolage Grotesque", system-ui, sans-serif;
+  --read: "Source Serif 4", Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--wall);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: 15px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* ---------- Shell and header ---------- */
+
+.shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px clamp(16px, 3vw, 40px) 48px;
+  padding-top: max(24px, env(safe-area-inset-top));
+  transition: padding-right 0.35s ease;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+}
+
+.brand h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.brand p {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.call-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 22px;
+  background: var(--ink);
+  color: var(--wall);
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.call-btn:hover:not(:disabled) {
+  background: var(--signal);
+}
+
+.call-btn:disabled {
+  background: var(--ink-soft);
+  cursor: default;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--mark);
+}
+
+.dot.on {
+  animation: blink 1.2s ease-in-out infinite;
+}
+
+.notice {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--mark);
+  font-size: 14px;
+}
+
+.notice code {
+  font-family: inherit;
+  font-weight: 700;
+}
+
+/* ---------- Layout ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.panel h2 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 14px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.text-btn {
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 4px;
+}
+
+.muted,
+.empty {
+  color: var(--ink-soft);
+}
+
+.empty {
+  padding: 28px 20px;
+  border: 1.5px dashed var(--line);
+  border-radius: 14px;
+}
+
+/* ---------- Doctors ---------- */
+
+.doctors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.doctor {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 8px solid var(--band);
+  border-radius: 6px 14px 14px 6px;
+  padding: 14px 16px 16px;
+}
+
+.doctor-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+}
+
+.doctor-head h3 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.doctor-head span {
+  color: var(--band);
+  font-weight: 500;
+}
+
+.days {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.day {
+  flex: none;
+}
+
+.day-label {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 190px;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 13px;
+  background: #fff;
+}
+
+/* ---------- Appointments ledger ---------- */
+
+.ledger {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.row {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.row strong {
+  display: block;
+  font-weight: 700;
+}
+
+.row span {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.row.cancelled .who,
+.row.cancelled .when {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.phone-no {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.state {
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: 13px !important;
+  font-weight: 500;
+  color: var(--ink) !important;
+  background: #cfe3d9;
+}
+
+.state.cancelled {
+  background: #ecd3cd;
+}
+
+/* Highlighter sweep when the agent books or cancels */
+.row.fresh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--mark);
+  transform-origin: left;
+  animation: mark 4.8s ease-out forwards;
+}
+
+/* ---------- Phone ---------- */
+
+.phone {
+  position: fixed;
+  z-index: 20;
+  right: 20px;
+  top: 20px;
+  bottom: 20px;
+  width: 372px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 18px 18px;
+  background: var(--phone);
+  color: var(--phone-text);
+  border-radius: 36px;
+  box-shadow: 0 24px 60px rgba(14, 41, 40, 0.38);
+  animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.phone-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--mark);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.phone.ringing .avatar {
+  animation: ring 1.4s ease-out infinite;
+}
+
+.caller strong {
+  display: block;
+  font-size: 17px;
+}
+
+.caller span {
+  font-size: 13px;
+  opacity: 0.65;
+}
+
+.status {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.phone.ringing .status {
+  opacity: 0.7;
+}
+
+.wave {
+  width: 100%;
+  height: 76px;
+  margin: 14px 0 6px;
+  transition: opacity 0.4s;
+}
+
+.phone.ringing .wave,
+.phone.ended .wave {
+  opacity: 0.35;
+}
+
+.transcript {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px 2px;
+  font-family: var(--read);
+  font-size: 16px;
+  line-height: 1.5;
+  scrollbar-width: thin;
+}
+
+.transcript p {
+  max-width: 88%;
+  padding: 9px 14px;
+  border-radius: 18px;
+}
+
+.transcript .you {
+  align-self: flex-end;
+  background: rgba(243, 241, 234, 0.12);
+  border-bottom-right-radius: 5px;
+}
+
+.transcript .bot {
+  align-self: flex-start;
+  background: var(--phone-text);
+  color: var(--ink);
+  border-bottom-left-radius: 5px;
+}
+
+.transcript .hint,
+.transcript .error {
+  align-self: center;
+  max-width: 100%;
+  background: none;
+  text-align: center;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.transcript .error {
+  color: #ffb4a6;
+  opacity: 1;
+}
+
+.confirm {
+  display: grid;
+  gap: 2px;
+  margin: 10px 0 2px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--mark);
+  color: var(--ink);
+  animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.confirm.cancelled {
+  background: #f0b8aa;
+}
+
+.confirm strong {
+  font-size: 16px;
+}
+
+.confirm span {
+  font-size: 14px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ctl {
+  flex: 1;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 10px;
+  background: rgba(243, 241, 234, 0.12);
+  color: var(--phone-text);
+  font-weight: 500;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.ctl:hover:not(:disabled) {
+  background: rgba(243, 241, 234, 0.22);
+}
+
+.ctl:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ctl.active {
+  background: var(--phone-text);
+  color: var(--ink);
+}
+
+.ctl.end {
+  background: var(--alert);
+  color: #fff;
+}
+
+.ctl.end:hover {
+  background: #a93825;
+}
+
+.ctl.wide:first-child {
+  background: var(--mark);
+  color: var(--ink);
+}
+
+.ctl.ghost {
+  background: rgba(243, 241, 234, 0.12);
+  color: var(--phone-text);
+}
+
+.phone :focus-visible {
+  outline-color: var(--mark);
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes rise {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(246, 201, 69, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 20px rgba(246, 201, 69, 0);
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes mark {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  10% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (min-width: 1101px) {
+  .shell.with-phone {
+    padding-right: calc(372px + 20px + clamp(16px, 3vw, 40px));
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  /* Phone becomes a bottom sheet */
+  .phone {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: min(78dvh, 640px);
+    border-radius: 28px 28px 0 0;
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+  }
+
+  .shell.with-phone {
+    padding-bottom: min(78dvh, 640px);
+  }
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+  }
+
+  .phone-no {
+    display: none;
+  }
+
+  .brand p {
+    display: none;
+  }
+}
